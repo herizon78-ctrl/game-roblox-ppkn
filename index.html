@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NORMA ADVENTURE: ROBLOX EDUCATIONAL WORLD</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+        
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            overflow: hidden;
+            background-color: #1a1a2e;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .font-roblox {
+            font-family: 'Fredoka One', cursive;
+            letter-spacing: 1px;
+        }
+
+        .roblox-btn {
+            background: linear-gradient(180deg, #00e676 0%, #00a843 100%);
+            border-bottom: 5px solid #006629;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.4);
+            transition: all 0.1s ease;
+        }
+
+        .roblox-btn:active {
+            transform: translateY(3px);
+            border-bottom: 2px solid #006629;
+        }
+
+        .roblox-btn-blue {
+            background: linear-gradient(180deg, #29b6f6 0%, #0288d1 100%);
+            border-bottom: 5px solid #01579b;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.4);
+        }
+        .roblox-btn-blue:active {
+            transform: translateY(3px);
+            border-bottom: 2px solid #01579b;
+        }
+
+        .roblox-btn-yellow {
+            background: linear-gradient(180deg, #ffca28 0%, #ffa000 100%);
+            border-bottom: 5px solid #c77800;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.4);
+        }
+        .roblox-btn-yellow:active {
+            transform: translateY(3px);
+            border-bottom: 2px solid #c77800;
+        }
+
+        .roblox-btn-red {
+            background: linear-gradient(180deg, #ef5350 0%, #d32f2f 100%);
+            border-bottom: 5px solid #9a0007;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.4);
+        }
+        .roblox-btn-red:active {
+            transform: translateY(3px);
+            border-bottom: 2px solid #9a0007;
+        }
+
+        /* Custom Scrollbar for Modals */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00e676;
+            border-radius: 4px;
+        }
+
+        /* Joystick styles */
+        #joystick-container {
+            position: absolute;
+            bottom: 25px;
+            left: 25px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            touch-action: none;
+            display: none;
+            z-index: 40;
+        }
+
+        #joystick-knob {
+            position: absolute;
+            top: 35px;
+            left: 35px;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, #ffffff 0%, #b0bec5 100%);
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        .modal-glass {
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(12px);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .zone-banner {
+            animation: bounceBanner 2s infinite alternate;
+        }
+        @keyframes bounceBanner {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-6px); }
+        }
+    </style>
+</head>
+<body class="select-none overflow-hidden">
+
+    <!-- 3D Canvas CONTAINER -->
+    <div id="canvas-container" class="w-full h-full absolute inset-0 z-0"></div>
+
+    <!-- UI OVERLAY LAYER -->
+    <div id="ui-layer" class="relative z-10 w-full h-full pointer-events-none flex flex-col justify-between p-4">
+
+        <!-- TOP BAR: PROGRESS & STATS -->
+        <div id="top-hud" class="flex justify-between items-start w-full gap-2 pointer-events-auto transition-all duration-300">
+            <!-- Profile & Level Info -->
+            <div class="bg-slate-900/90 border-2 border-slate-700 rounded-2xl p-3 flex items-center gap-3 shadow-xl max-w-xs sm:max-w-md">
+                <div class="w-12 h-12 bg-gradient-to-tr from-green-500 to-emerald-300 rounded-xl flex items-center justify-center text-white text-2xl font-bold font-roblox border-2 border-white shadow">
+                    <i class="fa-solid fa-user-astronaut"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-center">
+                        <span id="player-name-display" class="text-white font-bold text-sm sm:text-base truncate">Siswa SMP</span>
+                        <span id="player-level-tag" class="text-xs bg-yellow-500 text-black font-extrabold px-2 py-0.5 rounded-full">Lvl 1</span>
+                    </div>
+                    <!-- XP Bar -->
+                    <div class="w-full bg-slate-700 h-3 rounded-full mt-1 overflow-hidden border border-slate-600 relative">
+                        <div id="xp-bar" class="bg-gradient-to-r from-emerald-400 to-green-500 h-full w-0% transition-all duration-500"></div>
+                        <span id="xp-text" class="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white drop-shadow">0/100 XP</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats & Quest Tracker -->
+            <div class="flex flex-col items-end gap-2">
+                <!-- Stat Pills -->
+                <div class="flex gap-2">
+                    <div class="bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-1.5 flex items-center gap-2 shadow text-yellow-400 font-roblox text-sm sm:text-base">
+                        <i class="fa-solid fa-coins"></i>
+                        <span id="coins-display">0</span>
+                    </div>
+                    <div class="bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-1.5 flex items-center gap-2 shadow text-cyan-400 font-roblox text-sm sm:text-base">
+                        <i class="fa-solid fa-trophy"></i>
+                        <span id="score-display">0 XP</span>
+                    </div>
+                </div>
+
+                <!-- Active Zone & Quest Card -->
+                <div class="bg-slate-900/85 border-2 border-indigo-500/50 rounded-xl p-2.5 shadow-lg w-56 sm:w-72 text-right">
+                    <div class="text-[10px] uppercase tracking-wider text-indigo-400 font-bold" id="current-zone-name">ZONA 1: KOTA NORMA</div>
+                    <div class="text-xs text-white font-semibold truncate mt-0.5" id="current-quest-title"><i class="fa-solid fa-compass text-yellow-400 mr-1"></i> Cari Papan Informasi</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ZONE ENTER NOTIFICATION BANNER -->
+        <div id="zone-toast" class="self-center bg-indigo-600/90 text-white font-roblox px-6 py-2 rounded-2xl border-2 border-indigo-300 shadow-2xl text-base sm:text-xl tracking-wide opacity-0 transition-opacity duration-500 pointer-events-none transform -translate-y-4">
+            Selamat Datang di Kota Norma!
+        </div>
+
+        <!-- MOBILE TOUCH CONTROLS OVERLAY -->
+        <div id="mobile-controls" class="flex justify-between items-end w-full pointer-events-auto pb-2 px-2">
+            <!-- D-PAD / Joystick -->
+            <div id="joystick-container">
+                <div id="joystick-knob"></div>
+            </div>
+
+            <!-- Action Buttons (Jump & Interact) -->
+            <div class="flex gap-3 ml-auto">
+                <button id="btn-interact-mobile" class="w-16 h-16 bg-yellow-500 active:bg-yellow-600 border-b-4 border-yellow-700 rounded-2xl flex flex-col items-center justify-center text-white text-xs font-bold shadow-lg hidden">
+                    <i class="fa-solid fa-comment-dots text-xl mb-0.5"></i>
+                    <span>AKSI [E]</span>
+                </button>
+                <button id="btn-jump-mobile" class="w-16 h-16 bg-blue-500 active:bg-blue-600 border-b-4 border-blue-700 rounded-2xl flex flex-col items-center justify-center text-white text-xs font-bold shadow-lg">
+                    <i class="fa-solid fa-arrow-up text-xl mb-0.5"></i>
+                    <span>LOMPAT</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROMPT INTERAKSI INTERAKTIF (Floating UI) -->
+    <div id="interaction-prompt" class="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none hidden">
+        <div class="bg-yellow-400 border-4 border-slate-900 text-slate-900 font-roblox px-5 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce">
+            <span class="bg-slate-900 text-yellow-400 px-2.5 py-1 rounded-lg text-sm">TEKAN [E]</span>
+            <span id="prompt-text" class="text-sm sm:text-base">Bicara dengan NPC</span>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL SCREENS ==================== -->
+
+    <!-- 1. START MENU / MAIN SCREEN -->
+    <div id="start-menu-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
+        <div class="modal-glass w-full max-w-2xl rounded-3xl p-6 sm:p-8 text-center shadow-2xl relative border-4 border-indigo-500/40">
+            <!-- Game Title & Subtitle -->
+            <div class="mb-6">
+                <span class="bg-indigo-600 text-white font-bold text-xs px-3 py-1 rounded-full uppercase tracking-widest shadow">Pendidikan Pancasila VII - Fase D</span>
+                <h1 class="text-3xl sm:text-5xl font-roblox text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-green-400 to-cyan-400 mt-2 drop-shadow-md">
+                    NORMA ADVENTURE
+                </h1>
+                <h2 class="text-sm sm:text-base font-bold text-slate-300 mt-1">ROBLOX EDUCATIONAL WORLD</h2>
+                <p class="text-xs sm:text-sm text-indigo-300 mt-1 italic">"Petualangan Menjadi Warga Negara yang Baik"</p>
+            </div>
+
+            <!-- Player Name Input -->
+            <div class="mb-6 max-w-xs mx-auto text-left">
+                <label class="text-xs font-bold text-slate-300 uppercase tracking-wider block mb-1">Nama Pemain / Siswa:</label>
+                <input type="text" id="player-name-input" value="Siswa Hebat" placeholder="Masukkan nama..." class="w-full bg-slate-800 border-2 border-indigo-400/50 rounded-xl px-4 py-2 text-white font-semibold focus:outline-none focus:border-green-400 transition">
+            </div>
+
+            <!-- Menu Buttons Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto">
+                <button id="btn-start-game" class="roblox-btn text-white font-roblox py-3 rounded-2xl text-base sm:text-lg flex items-center justify-center gap-2 shadow-lg">
+                    <i class="fa-solid fa-play"></i> MULAI PETUALANGAN
+                </button>
+                <button id="btn-open-materi" class="roblox-btn-blue text-white font-roblox py-3 rounded-2xl text-base sm:text-lg flex items-center justify-center gap-2 shadow-lg">
+                    <i class="fa-solid fa-book-open"></i> MATERI NORMA
+                </button>
+                <button id="btn-open-petunjuk" class="roblox-btn-yellow text-slate-900 font-roblox py-3 rounded-2xl text-base sm:text-lg flex items-center justify-center gap-2 shadow-lg">
+                    <i class="fa-solid fa-gamepad"></i> PETUNJUK BERMAIN
+                </button>
+                <button id="btn-open-tentang" class="roblox-btn-red text-white font-roblox py-3 rounded-2xl text-base sm:text-lg flex items-center justify-center gap-2 shadow-lg">
+                    <i class="fa-solid fa-circle-info"></i> TENTANG GAME
+                </button>
+            </div>
+
+            <!-- Teacher Info Badge -->
+            <div class="mt-8 pt-4 border-t border-slate-700/60 text-xs text-slate-400 flex flex-col sm:flex-row justify-between items-center gap-2">
+                <div><i class="fa-solid fa-user-tie text-indigo-400 mr-1"></i> Disusun Oleh: <span class="font-bold text-slate-200">Herizon, S.Pd., M.Pd.</span></div>
+                <div><i class="fa-solid fa-school text-indigo-400 mr-1"></i> <span class="font-bold text-slate-200">SMP Negeri 7 Senayang</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MATERI PEMBELAJARAN MODAL -->
+    <div id="materi-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-4 hidden">
+        <div class="modal-glass w-full max-w-3xl max-h-[90vh] rounded-3xl p-6 flex flex-col shadow-2xl relative border-4 border-blue-500/40">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4">
+                <h2 class="text-xl sm:text-2xl font-roblox text-cyan-400 flex items-center gap-2">
+                    <i class="fa-solid fa-book-bookmark"></i> RANGKUMAN MATERI NORMA
+                </h2>
+                <button class="btn-close-modal text-slate-400 hover:text-white text-2xl font-bold p-1">&times;</button>
+            </div>
+
+            <!-- Content Area Scrollable -->
+            <div class="overflow-y-auto space-y-4 pr-2 text-slate-200 text-sm leading-relaxed flex-1">
+                <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700">
+                    <h3 class="font-roblox text-yellow-400 text-base mb-1">1. Pengertian & Fungsi Norma</h3>
+                    <p>Norma adalah kaidah, aturan, atau pedoman hidup yang berlaku dalam masyarakat untuk mengatur tingkah laku manusia agar tercipta ketertiban, keadilan, dan kedamaian bersama.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="bg-indigo-900/40 p-3.5 rounded-xl border border-indigo-500/40">
+                        <h4 class="font-roblox text-emerald-400 text-sm mb-1"><i class="fa-solid fa-mosque mr-1"></i> Norma Agama</h4>
+                        <p class="text-xs">Aturan yang bersumber dari wahyu Tuhan Yang Maha Esa. Sanksi berupa dosa dan pahala di akhirat.</p>
+                    </div>
+                    <div class="bg-indigo-900/40 p-3.5 rounded-xl border border-indigo-500/40">
+                        <h4 class="font-roblox text-rose-400 text-sm mb-1"><i class="fa-solid fa-heart mr-1"></i> Norma Kesusilaan</h4>
+                        <p class="text-xs">Aturan yang berasal dari hati nurani manusia. Sanksi berupa rasa penyesalan, malu, dan rasa bersalah.</p>
+                    </div>
+                    <div class="bg-indigo-900/40 p-3.5 rounded-xl border border-indigo-500/40">
+                        <h4 class="font-roblox text-amber-400 text-sm mb-1"><i class="fa-solid fa-handshake mr-1"></i> Norma Kesopanan</h4>
+                        <p class="text-xs">Aturan yang timbul dari pergaulan dan adat istiadat masyarakat. Sanksi berupa celaan atau dikucilkan.</p>
+                    </div>
+                    <div class="bg-indigo-900/40 p-3.5 rounded-xl border border-indigo-500/40">
+                        <h4 class="font-roblox text-cyan-400 text-sm mb-1"><i class="fa-solid fa-scale-balanced mr-1"></i> Norma Hukum</h4>
+                        <p class="text-xs">Aturan resmi yang dibuat oleh badan berwenang negara, bersifat mengikat dan memaksa. Sanksi tegas (denda/penjara).</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700">
+                    <h3 class="font-roblox text-yellow-400 text-base mb-1">2. Manfaat Menaati Norma</h3>
+                    <ul class="list-disc list-inside text-xs space-y-1 text-slate-300">
+                        <li>Menciptakan kehidupan bermasyarakat yang aman, tertib, dan damai.</li>
+                        <li>Mencegah timbulnya perselisihan dan konflik antawarga.</li>
+                        <li>Melindungi hak-hak setiap individu warga negara.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-700 text-right">
+                <button class="btn-close-modal roblox-btn-blue text-white font-roblox px-6 py-2 rounded-xl text-sm">TUTUP MATERI</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. PETUNJUK BERMAIN MODAL -->
+    <div id="petunjuk-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-4 hidden">
+        <div class="modal-glass w-full max-w-2xl rounded-3xl p-6 shadow-2xl relative border-4 border-yellow-500/40">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4">
+                <h2 class="text-xl font-roblox text-yellow-400 flex items-center gap-2">
+                    <i class="fa-solid fa-gamepad"></i> PETUNJUK KONTROL & CARA MAIN
+                </h2>
+                <button class="btn-close-modal text-slate-400 hover:text-white text-2xl font-bold p-1">&times;</button>
+            </div>
+            
+            <div class="space-y-4 text-slate-200 text-sm">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                        <h4 class="font-bold text-green-400 text-sm mb-2"><i class="fa-solid fa-keyboard mr-1"></i> Kontrol Laptop / PC:</h4>
+                        <ul class="text-xs space-y-1 text-slate-300">
+                            <li><b class="text-yellow-400">WASD / Panah</b>: Bergerak</li>
+                            <li><b class="text-yellow-400">SPASI</b>: Melompat</li>
+                            <li><b class="text-yellow-400">Tombol E</b>: Interaksi dengan NPC/Papan</li>
+                            <li><b class="text-yellow-400">Klik & Drag Mouse</b>: Rotasi Kamera</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                        <h4 class="font-bold text-cyan-400 text-sm mb-2"><i class="fa-solid fa-mobile-screen mr-1"></i> Kontrol Layar HP:</h4>
+                        <ul class="text-xs space-y-1 text-slate-300">
+                            <li><b class="text-yellow-400">Virtual Joystick (Kiri)</b>: Bergerak</li>
+                            <li><b class="text-yellow-400">Tombol LOMPAT (Kanan)</b>: Melompat</li>
+                            <li><b class="text-yellow-400">Tombol AKSI [E]</b>: Interaksi NPC</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-indigo-950/60 p-3.5 rounded-xl border border-indigo-500/30 text-xs">
+                    <h4 class="font-roblox text-indigo-300 mb-1">Misi & Alur Permainan:</h4>
+                    <p>Jelajahi 5 Zona (Kota Norma, Sekolah, Masyarakat, Desa Harmoni, Arena Master Norma). Temukan NPC berpendar, selesaikan 8 misi tantangan kasus norma HOTS, kumpulkan XP & Koin hingga meraih gelar <b>MASTER NORMA</b>!</p>
+                </div>
+            </div>
+
+            <div class="mt-5 text-right">
+                <button class="btn-close-modal roblox-btn-yellow text-slate-900 font-roblox px-6 py-2 rounded-xl text-sm">MENGERTI!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. TENTANG GAME MODAL -->
+    <div id="tentang-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 p-4 hidden">
+        <div class="modal-glass w-full max-w-lg rounded-3xl p-6 shadow-2xl relative border-4 border-red-500/40 text-center">
+            <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-3 text-red-400 text-3xl border border-red-500/40">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <h2 class="text-2xl font-roblox text-white">TENTANG GAME EDUKASI</h2>
+            <p class="text-xs text-indigo-300 font-bold mt-1">NORMA ADVENTURE: ROBLOX EDUCATIONAL WORLD</p>
+            
+            <div class="my-4 bg-slate-800/90 p-4 rounded-2xl text-left text-xs text-slate-300 space-y-2 border border-slate-700">
+                <p><b>Mata Pelajaran:</b> Pendidikan Pancasila (PKN)</p>
+                <p><b>Kelas / Fase:</b> VII SMP / Fase D</p>
+                <p><b>Materi Utama:</b> Norma dalam Kehidupan Bermasyarakat</p>
+                <p><b>Pengembang Aplikasi:</b> Herizon, S.Pd., M.Pd.</p>
+                <p><b>Instansi:</b> SMP Negeri 7 Senayang</p>
+                <p><b>Teknologi:</b> HTML5, Canvas 2D / 3D Three.js Engine & Web Audio API</p>
+            </div>
+
+            <button class="btn-close-modal roblox-btn-red text-white font-roblox px-8 py-2 rounded-xl text-sm">TUTUP</button>
+        </div>
+    </div>
+
+    <!-- 5. NPC DIALOG / MISSION MODAL -->
+    <div id="npc-dialog-modal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/70 p-4 hidden">
+        <div class="modal-glass w-full max-w-xl rounded-3xl p-5 sm:p-6 shadow-2xl border-4 border-yellow-400/80 animate-slide-up">
+            <!-- NPC Header Profile -->
+            <div class="flex items-center gap-3 border-b border-slate-700 pb-3 mb-3">
+                <div id="npc-avatar-icon" class="w-12 h-12 rounded-2xl bg-yellow-400 border-2 border-slate-900 flex items-center justify-center text-slate-900 text-2xl font-bold">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div>
+                    <h3 id="npc-name" class="font-roblox text-yellow-400 text-base sm:text-lg">Pak Guru</h3>
+                    <p id="npc-role" class="text-[11px] text-slate-300 font-bold uppercase tracking-wider">Pemberi Misi Zona 2</p>
+                </div>
+            </div>
+
+            <!-- Dialogue Text / Case Study -->
+            <div class="mb-4">
+                <p id="npc-dialog-text" class="text-sm sm:text-base text-white leading-relaxed font-semibold">
+                    Halo! Mari kita uji pemahamanmu tentang norma.
+                </p>
+            </div>
+
+            <!-- Options Container -->
+            <div id="npc-options-container" class="space-y-2">
+                <!-- Dynamic Button Answers -->
+            </div>
+
+            <!-- Feedback Msg Container -->
+            <div id="npc-feedback-container" class="mt-3 p-3 rounded-xl hidden text-xs font-bold"></div>
+
+            <div class="mt-4 text-right">
+                <button id="btn-close-npc-dialog" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2 rounded-xl text-xs hidden">TUTUP DIALOG</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. FINAL RESULT SCREEN MODAL -->
+    <div id="result-screen-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4 hidden">
+        <div class="modal-glass w-full max-w-xl rounded-3xl p-6 text-center shadow-2xl border-4 border-emerald-400/80">
+            <div class="w-20 h-20 bg-gradient-to-tr from-yellow-400 to-amber-500 rounded-3xl flex items-center justify-center mx-auto mb-3 border-4 border-white shadow-xl text-white text-4xl font-roblox animate-bounce">
+                <i class="fa-solid fa-award"></i>
+            </div>
+            
+            <h2 class="text-2xl sm:text-3xl font-roblox text-white">PETUALANGAN SELESAI!</h2>
+            <p id="result-player-name" class="text-sm text-cyan-300 font-bold">Selamat, Siswa Hebat!</p>
+
+            <!-- Badge Achievement Box -->
+            <div class="my-4 bg-slate-900/90 border-2 border-amber-400 p-4 rounded-2xl text-center">
+                <div class="text-xs uppercase text-slate-400 font-bold">Gelar Pencapaian Kamu:</div>
+                <div id="result-badge-title" class="text-2xl sm:text-3xl font-roblox text-yellow-400 mt-1">MASTER NORMA</div>
+                <p id="result-badge-desc" class="text-xs text-slate-300 mt-1">Kamu sangat luar biasa dalam memahami dan mengaplikasikan nilai-nilai norma!</p>
+            </div>
+
+            <!-- Stats Summary Table -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
+                <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700">
+                    <div class="text-[10px] text-slate-400 font-bold uppercase">Skor Akhir</div>
+                    <div id="result-final-score" class="text-lg font-roblox text-emerald-400">100%</div>
+                </div>
+                <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700">
+                    <div class="text-[10px] text-slate-400 font-bold uppercase">Total XP</div>
+                    <div id="result-total-xp" class="text-lg font-roblox text-yellow-400">480</div>
+                </div>
+                <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700">
+                    <div class="text-[10px] text-slate-400 font-bold uppercase">Jawaban Benar</div>
+                    <div id="result-correct-count" class="text-lg font-roblox text-cyan-400">8 / 8</div>
+                </div>
+                <div class="bg-slate-800 p-2.5 rounded-xl border border-slate-700">
+                    <div class="text-[10px] text-slate-400 font-bold uppercase">Total Koin</div>
+                    <div id="result-coins" class="text-lg font-roblox text-amber-400">80</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 justify-center">
+                <button id="btn-restart-game" class="roblox-btn text-white font-roblox px-6 py-3 rounded-2xl text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> MAIN LAGI
+                </button>
+                <button id="btn-menu-game" class="roblox-btn-blue text-white font-roblox px-6 py-3 rounded-2xl text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-house"></i> KEMBALI KE MENU
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== GAME ENGINE & LOGIC SCRIPT ==================== -->
+    <script>
+        /**
+         * NORMA ADVENTURE 3D GAME ENGINE
+         * Created for Pendidikan Pancasila SMP Kelas VII
+         * Developed with Three.js & Custom Web Audio Synthesizer
+         */
+
+        // --- WEB AUDIO SYNTHESIZER FOR SOUND EFFECTS ---
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playTone(freq, duration, type = 'sine', gainVal = 0.1) {
+                if (!this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e) {}
+            }
+
+            jump() {
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            }
+
+            correct() {
+                this.init();
+                this.playTone(523.25, 0.1, 'triangle', 0.15); // C5
+                setTimeout(() => this.playTone(659.25, 0.1, 'triangle', 0.15), 100); // E5
+                setTimeout(() => this.playTone(783.99, 0.2, 'triangle', 0.15), 200); // G5
+            }
+
+            wrong() {
+                this.init();
+                this.playTone(220, 0.15, 'sawtooth', 0.15);
+                setTimeout(() => this.playTone(180, 0.25, 'sawtooth', 0.15), 150);
+            }
+
+            complete() {
+                this.init();
+                const notes = [440, 554.37, 659.25, 880];
+                notes.forEach((freq, idx) => {
+                    setTimeout(() => this.playTone(freq, 0.2, 'sine', 0.15), idx * 120);
+                });
+            }
+        }
+
+        const sfx = new SoundFX();
+
+        // --- GAME DATA & QUEST STATE ---
+        const GAME_STATE = {
+            playerName: "Siswa SMP",
+            xp: 0,
+            coins: 0,
+            level: 1,
+            completedQuests: [],
+            correctAnswers: 0,
+            wrongAnswers: 0,
+            activeZone: 1,
+            activeNPC: null
+        };
+
+        // 8 HOTS QUEST DATA FOR CLASS VII PKN
+        const QUESTS_DATA = [
+            {
+                id: 1,
+                zone: 1,
+                title: "Misi 1: Papan Informasi Kota Norma",
+                npcName: "Papan Informasi Norma",
+                npcRole: "Zona 1 - Kota Norma",
+                icon: "fa-circle-info",
+                color: "#3b82f6",
+                dialog: "Selamat datang di Kota Norma! Agar warga hidup rukun, aturan sangat dibutuhkan. Apakah pengertian dari 'Norma' yang paling tepat?",
+                options: [
+                    { text: "A. Keinginan pribadi seseorang yang wajib dituruti orang lain.", correct: false, exp: 0 },
+                    { text: "B. Kaidah, aturan, atau pedoman hidup yang mengatur tingkah laku manusia.", correct: true, exp: 50, explanation: "Tepat! Norma adalah kaidah atau pedoman hidup untuk menciptakan ketertiban masyarakat." },
+                    { text: "C. Hukuman penjara yang diberikan kepada pelaku kejahatan saja.", correct: false, exp: 0 },
+                    { text: "D. Kebiasaan bermain tanpa batasan waktu di lingkungan rumah.", correct: false, exp: 0 }
+                ]
+            },
+            {
+                id: 2,
+                zone: 2,
+                title: "Misi 2: Kejujuran saat Ujian Sekolah",
+                npcName: "Pak Guru Budi",
+                npcRole: "Guru PKN Sekolah",
+                icon: "fa-chalkboard-user",
+                color: "#10b981",
+                dialog: "Saat ulangan PKN berlangsung, Ani belum belajar dan kesulitan menjawab soal. Temannya menawarkan kuis jawaban (menyontek). Sebagai siswa yang taat norma kesusilaan, apa yang seharusnya Ani lakukan?",
+                options: [
+                    { text: "A. Menerima bantuan jawaban agar mendapatkan nilai sempurna.", correct: false, exp: 0 },
+                    { text: "B. Menolak dengan sopan dan mengerjakan sebisanya secara jujur.", correct: true, exp: 50, explanation: "Benar! Menolak menyontek menunjukkan kepatuhan pada Norma Kesusilaan (suara hati nurani dan kejujuran)." },
+                    { text: "C. Menyalin semua jawaban teman lalu membagikannya ke siswa lain.", correct: false, exp: 0 },
+                    { text: "D. Pura-pura sakit agar tidak ikut ulangan hari itu.", correct: false, exp: 0 }
+                ]
+            },
+            {
+                id: 3,
+                zone: 2,
+                title: "Misi 3: Menolong Teman Terjatuh",
+                npcName: "Doni (Siswa)",
+                npcRole: "Siswa SMP 7",
+                icon: "fa-user-graduate",
+                color: "#f59e0b",
+                dialog: "Aduh! Kakiku terkilir dan buku-bukuku berserakan di halaman sekolah. Banyak siswa lain yang lewat begitu saja. Tindakan mana yang mencerminkan kepedulian sesuai norma kesopanan dan kesusilaan?",
+                options: [
+                    { text: "A. Mengabadikan foto Doni lalu mengunggahnya ke media sosial.", correct: false, exp: 0 },
+                    { text: "B. Segera menghampiri, membantu merapikan buku, dan mengantar ke UKS.", correct: true, exp: 50, explanation: "Luar biasa! Membantu sesama yang kesulitan adalah bentuk nyata pengamalan norma dalam kehidupan sekolah." },
+                    { text: "C. Tertawa keras lalu menyalahkan Doni karena tidak hati-hati.", correct: false, exp: 0 },
+                    { text: "D. Meminta bayaran koin sebelum memberikan pertolongan.", correct: false, exp: 0 }
+                ]
+            },
+            {
+                id: 4,
+                zone: 3,
+                title: "Misi 4: Tertib Lalu Lintas di Jalan Raya",
+                npcName: "Pak Polisi Satlantas",
+                npcRole: "Petugas Zona 3",
+                icon: "fa-user-shield",
+                color: "#ef4444",
+                dialog: "Halo adik-adik! Saat berkendara di jalan raya, seorang pengendara motor tidak memakai helm dan menerobos lampu merah yang menyala. Pelanggaran ini termasuk ke dalam jenis norma apa dan apa sanksinya?",
+                options: [
+                    { text: "A. Norma Kesopanan, sanksinya dicemooh teman.", correct: false, exp: 0 },
+                    { text: "B. Norma Agama, sanksinya tidak mendapat uang saku.", correct: false, exp: 0 },
+                    { text: "C. Norma Hukum, sanksinya tegas berupa penilangan/denda oleh polisi.", correct: true, exp: 50, explanation: "Tepat sekali! Peraturan lalu lintas tertulis dalam undang-undang negara sehingga termasuk Norma Hukum dengan sanksi tegas." },
+                    { text: "D. Norma Kesusilaan, sanksinya dipuji oleh pengendara lain.", correct: false, exp: 0 }
+                ]
+            },
+            {
+                id: 5,
+                zone: 3,
+                title: "Misi 5: Menjaga Kebersihan Fasilitas Umum",
+                npcName: "Ibu Siti (Pedagang)",
+                npcRole: "Pasar Kota Norma",
+                icon: "fa-store",
+                color: "#8b5cf6",
+                dialog: "Di pasar terdapat tempat sampah yang disediakan. Namun ada seseorang yang melempar bungkus plastik bekas ke tengah jalan. Mengapa membuang sampah sembarangan melanggar norma?",
+                options: [
+                    { text: "A. Mengganggu kebersihan lingkungan, hak orang lain, dan melanggar ketertiban.", correct: true, exp: 50, explanation: "Hebat! Membuang sampah pada tempatnya memelihara hak orang lain atas lingkungan bersih dan sehat." },
+                    { text: "B. Membuang sampah sembarangan tidak ada hubungannya dengan norma.", correct: false, exp: 0 },
+                    { text: "C. Karena tempat sampah dibuat hanya sebagai hiasan jalan.", correct: false, exp: 0 },
+                    { text: "D. Karena plastik bekas merupakan barang berharga yang harus disimpan.", correct: false, exp: 0 }
+                ]
+            },
+            {
+                id: 6,
+                zone: 4,
+                title: "Misi 6: Gotong Royong Desa Harmoni",
+                npcName: "Pak RT Slamet",
+                npcRole: "Ketua RT Desa Harmoni",
+                icon: "fa-people-roof",
+                color: "#ec4899",
+                dialog: "Hari Minggu ini warga Desa Harmoni mengadakan kerja bakti membersihkan selokan. Pak Ahmad sibuk tetapi tetap meluangkan waktu bergotong royong. Nilai Pancasila & norma apakah yang ditunjukkan?",
+                options: [
+                    { text: "A. Kerjasama, persatuan, dan kepatuhan pada kesepakatan norma masyarakat.", correct: true, exp: 50, explanation: "Tepat! Gotong royong merupakan wujud kebersamaan dan penerapan norma dalam masyarakat." },
+                    { text: "B. Sikap mementingkan diri sendiri agar dipuji kepala desa.", correct: false, exp: 0 },
+                    { text: "C. Pemborosan tenaga tanpa memberikan manfaat bagi lingkungan.", correct: false, exp: 0 },
+                    { text: "D. Keterpaksaan karena takut dideportasi dari desa.", correct: false, exp: 0 }
+                ]
+            },
+            {
+                id: 7,
+                zone: 4,
+                title: "Misi 7: Toleransi Beragama & Berpendapat",
+                npcName: "Mbak Putu",
+                npcRole: "Warga Desa Harmoni",
+                icon: "fa-hands-holding-child",
+                color: "#06b6d4",
+                dialog: "Temanmu sedang beribadah sesuai agamanya. Pada saat yang sama kelompok mu ingin latihan musik keras di sebelah rumahnya. Tindakan mana yang mencerminkan Norma Agama dan Toleransi?",
+                options: [
+                    { text: "A. Memutar musik sangat keras agar suasana menjadi ramai.", correct: false, exp: 0 },
+                    { text: "B. Menunda latihan musik atau memindahkan lokasi demi menghormati ibadahnya.", correct: true, exp: 50, explanation: "Sangat baik! Saling menghormati kebebasan beribadah adalah pengamalan Norma Agama dan Pancasila." },
+                    { text: "C. Menyuruh teman tersebut menghentikan ibadahnya.", correct: false, exp: 0 },
+                    { text: "D. Melaporkan teman tersebut ke pihak kepolisian.", correct: false, exp: 0 }
+                ]
+            },
+            {
+                id: 8,
+                zone: 5,
+                title: "Misi 8: Ujian Akhir Master Norma",
+                npcName: "Penjaga Gerbang Master",
+                npcRole: "Arena Master Norma",
+                icon: "fa-trophy",
+                color: "#eab308",
+                dialog: "Selamat tiba di Gerbang Akhir! Ujian Terakhir: Apabila suatu negara masyarakatnya tidak mematuhi norma sama sekali, akibat apakah yang paling utama akan terjadi?",
+                options: [
+                    { text: "A. Negara menjadi sangat maju dan kaya raya secara cepat.", correct: false, exp: 0 },
+                    { text: "B. Terjadi kekacauan, ketidakadilan, dan hilangnya rasa aman bagi warga.", correct: true, exp: 100, explanation: "SEMPURNA! Tanpa norma, hukum rimba berlaku dan ketertiban masyarakat akan hancur." },
+                    { text: "C. Semua warga akan terbebas dari tugas sekolah.", correct: false, exp: 0 },
+                    { text: "D. Tidak ada dampak apapun bagi kehidupan sehari-hari.", correct: false, exp: 0 }
+                ]
+            }
+        ];
+
+        // --- THREE.JS 3D SCENE & WORLD CREATION ---
+        let scene, camera, renderer;
+        let playerGroup, playerBody, playerHead;
+        let npcs = [];
+        let interactiveObjects = [];
+        let clock = new THREE.Clock();
+
+        // Player Movement & Physics state
+        const playerState = {
+            pos: new THREE.Vector3(0, 0, 15),
+            velocity: new THREE.Vector3(),
+            speed: 10,
+            jumpForce: 12,
+            isGrounded: true,
+            rotation: 0
+        };
+
+        const keys = { forward: false, backward: false, left: false, right: false, jump: false };
+        let joystickInput = { x: 0, y: 0 };
+
+        function init3DWorld() {
+            const container = document.getElementById('canvas-container');
+
+            // 1. Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x7dd3fc); // Bright sky blue
+            scene.fog = new THREE.FogExp2(0x7dd3fc, 0.008);
+
+            // 2. Camera
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            // 3. Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            // 4. Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const sunLight = new THREE.DirectionalLight(0xfffbeb, 0.8);
+            sunLight.position.set(50, 80, 40);
+            sunLight.castShadow = true;
+            sunLight.shadow.mapSize.width = 2048;
+            sunLight.shadow.mapSize.height = 2048;
+            sunLight.shadow.camera.near = 0.5;
+            sunLight.shadow.camera.far = 250;
+            const d = 100;
+            sunLight.shadow.camera.left = -d;
+            sunLight.shadow.camera.right = d;
+            sunLight.shadow.camera.top = d;
+            sunLight.shadow.camera.bottom = -d;
+            scene.add(sunLight);
+
+            // 5. Ground / Terrain
+            createTerrain();
+
+            // 6. Player Roblox Blocky Avatar
+            createPlayerAvatar();
+
+            // 7. World Buildings & Zones
+            buildZone1KotaNorma();
+            buildZone2Sekolah();
+            buildZone3Masyarakat();
+            buildZone4DesaHarmoni();
+            buildZone5ArenaMaster();
+
+            // 8. Spawn Quest NPCs
+            spawnQuestNPCs();
+
+            // Event Listeners
+            window.addEventListener('resize', onWindowResize);
+            setupInputListeners();
+
+            // Start Animation Loop
+            animate();
+        }
+
+        // GROUND CREATION
+        function createTerrain() {
+            // Main Grass Floor
+            const groundGeo = new THREE.PlaneGeometry(300, 300);
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.8 });
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Main Road Grid
+            const roadMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.5 });
+            const road1 = new THREE.Mesh(new THREE.PlaneGeometry(16, 260), roadMat);
+            road1.rotation.x = -Math.PI / 2;
+            road1.position.set(0, 0.05, 0);
+            road1.receiveShadow = true;
+            scene.add(road1);
+
+            const road2 = new THREE.Mesh(new THREE.PlaneGeometry(260, 16), roadMat);
+            road2.rotation.x = -Math.PI / 2;
+            road2.position.set(0, 0.06, 0);
+            road2.receiveShadow = true;
+            scene.add(road2);
+
+            // Road Lines
+            const lineMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
+            for (let z = -120; z <= 120; z += 15) {
+                const line = new THREE.Mesh(new THREE.PlaneGeometry(1, 6), lineMat);
+                line.rotation.x = -Math.PI / 2;
+                line.position.set(0, 0.07, z);
+                scene.add(line);
+            }
+        }
+
+        // CREATE ROBLOX PLAYER CHARACTER
+        function createPlayerAvatar() {
+            playerGroup = new THREE.Group();
+
+            // Torso (Blocky)
+            const torsoGeo = new THREE.BoxGeometry(1.2, 1.4, 0.7);
+            const torsoMat = new THREE.MeshStandardMaterial({ color: 0x0288d1 }); // Blue shirt
+            const torso = new THREE.Mesh(torsoGeo, torsoMat);
+            torso.position.y = 1.4;
+            torso.castShadow = true;
+            playerGroup.add(torso);
+
+            // Head (Blocky)
+            const headGeo = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xffb74d }); // Skin tone
+            playerHead = new THREE.Mesh(headGeo, headMat);
+            playerHead.position.y = 2.6;
+            playerHead.castShadow = true;
+            playerGroup.add(playerHead);
+
+            // Face Details (Eyes & Smile)
+            const eyeGeo = new THREE.BoxGeometry(0.18, 0.18, 0.05);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111827 });
+            const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+            leftEye.position.set(-0.22, 2.7, 0.52);
+            const rightEye = leftEye.clone();
+            rightEye.position.x = 0.22;
+            playerGroup.add(leftEye);
+            playerGroup.add(rightEye);
+
+            // Legs
+            const legGeo = new THREE.BoxGeometry(0.55, 1.2, 0.65);
+            const legMat = new THREE.MeshStandardMaterial({ color: 0x334155 }); // Dark pants
+            const leftLeg = new THREE.Mesh(legGeo, legMat);
+            leftLeg.position.set(-0.3, 0.6, 0);
+            leftLeg.castShadow = true;
+            const rightLeg = leftLeg.clone();
+            rightLeg.position.x = 0.3;
+            playerGroup.add(leftLeg);
+            playerGroup.add(rightLeg);
+
+            // Arms
+            const armGeo = new THREE.BoxGeometry(0.45, 1.3, 0.55);
+            const armMat = new THREE.MeshStandardMaterial({ color: 0x0288d1 });
+            const leftArm = new THREE.Mesh(armGeo, armMat);
+            leftArm.position.set(-0.85, 1.35, 0);
+            leftArm.castShadow = true;
+            const rightArm = leftArm.clone();
+            rightArm.position.x = 0.85;
+            playerGroup.add(leftArm);
+            playerGroup.add(rightArm);
+
+            playerGroup.position.copy(playerState.pos);
+            scene.add(playerGroup);
+        }
+
+        // CREATE HELPER FOR BLOCKY BUILDINGS
+        function createBlockyBuilding(x, z, w, h, d, color, titleText) {
+            const group = new THREE.Group();
+            
+            // Wall Mesh
+            const geo = new THREE.BoxGeometry(w, h, d);
+            const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.4 });
+            const building = new THREE.Mesh(geo, mat);
+            building.position.y = h / 2;
+            building.castShadow = true;
+            building.receiveShadow = true;
+            group.add(building);
+
+            // Roof Accent
+            const roofGeo = new THREE.BoxGeometry(w + 0.6, 0.8, d + 0.6);
+            const roofMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
+            const roof = new THREE.Mesh(roofGeo, roofMat);
+            roof.position.y = h + 0.4;
+            roof.castShadow = true;
+            group.add(roof);
+
+            // Door
+            const doorGeo = new THREE.BoxGeometry(w * 0.25, h * 0.4, 0.2);
+            const doorMat = new THREE.MeshStandardMaterial({ color: 0x78350f });
+            const door = new THREE.Mesh(doorGeo, doorMat);
+            door.position.set(0, (h * 0.4) / 2, d / 2 + 0.1);
+            group.add(door);
+
+            group.position.set(x, 0, z);
+            scene.add(group);
+            return group;
+        }
+
+        // ZONA BUILDINGS BUILDERS
+        function buildZone1KotaNorma() {
+            // City Hall / Info Center
+            createBlockyBuilding(-30, 30, 20, 12, 18, 0x3b82f6, "BALAI KOTA");
+            // Decorative Trees
+            for (let i = 0; i < 6; i++) {
+                spawnTree(-45 + (i * 6), 15);
+            }
+        }
+
+        function buildZone2Sekolah() {
+            // SMP Negeri 7 Building
+            createBlockyBuilding(-40, -40, 30, 14, 22, 0x10b981, "SMP NEGERI 7");
+            // School Flag Pole
+            const poleGeo = new THREE.CylinderGeometry(0.15, 0.15, 12);
+            const poleMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0 });
+            const pole = new THREE.Mesh(poleGeo, poleMat);
+            pole.position.set(-40, 6, -24);
+            scene.add(pole);
+
+            // Indonesian Flag (Red & White)
+            const flagRed = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.8, 0.1), new THREE.MeshBasicMaterial({ color: 0xef4444 }));
+            flagRed.position.set(-38.6, 11.2, -24);
+            scene.add(flagRed);
+            const flagWhite = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.8, 0.1), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+            flagWhite.position.set(-38.6, 10.4, -24);
+            scene.add(flagWhite);
+        }
+
+        function buildZone3Masyarakat() {
+            // Police Station & Market
+            createBlockyBuilding(35, 35, 22, 13, 20, 0xef4444, "KANTOR POLISI");
+            createBlockyBuilding(60, 30, 18, 10, 16, 0x8b5cf6, "PASAR KOTA");
+        }
+
+        function buildZone4DesaHarmoni() {
+            // Houses
+            createBlockyBuilding(40, -35, 16, 9, 15, 0xec4899, "RUMAH PAK RT");
+            createBlockyBuilding(65, -40, 18, 10, 16, 0x06b6d4, "RUMAH WARGA");
+        }
+
+        function buildZone5ArenaMaster() {
+            // Master Platform
+            const stage = new THREE.Mesh(new THREE.CylinderGeometry(14, 16, 3, 16), new THREE.MeshStandardMaterial({ color: 0xeab308 }));
+            stage.position.set(0, 1.5, -90);
+            stage.receiveShadow = true;
+            scene.add(stage);
+
+            // Golden Trophy Mesh
+            const trophyGeo = new THREE.BoxGeometry(2, 4, 2);
+            const trophyMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8, roughness: 0.2 });
+            const trophy = new THREE.Mesh(trophyGeo, trophyMat);
+            trophy.position.set(0, 5, -90);
+            scene.add(trophy);
+        }
+
+        function spawnTree(x, z) {
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 4), new THREE.MeshStandardMaterial({ color: 0x78350f }));
+            trunk.position.set(x, 2, z);
+            trunk.castShadow = true;
+            scene.add(trunk);
+
+            const leaves = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 3), new THREE.MeshStandardMaterial({ color: 0x22c55e }));
+            leaves.position.set(x, 4.5, z);
+            leaves.castShadow = true;
+            scene.add(leaves);
+        }
+
+        // SPAWN INTERACTIVE ROBLOX NPCS
+        function spawnQuestNPCs() {
+            const npcCoords = [
+                { id: 1, x: -15, z: 20 },   // Zona 1 Info
+                { id: 2, x: -30, z: -25 },  // Zona 2 Pak Guru
+                { id: 3, x: -45, z: -25 },  // Zona 2 Doni
+                { id: 4, x: 25, z: 25 },    // Zona 3 Polisi
+                { id: 5, x: 50, z: 20 },    // Zona 3 Ibu Siti
+                { id: 6, x: 30, z: -25 },   // Zona 4 Pak RT
+                { id: 7, x: 55, z: -30 },   // Zona 4 Mbak Putu
+                { id: 8, x: 0, z: -75 }     // Zona 5 Arena Master
+            ];
+
+            npcCoords.forEach(item => {
+                const qData = QUESTS_DATA.find(q => q.id === item.id);
+                if (!qData) return;
+
+                const npcGroup = new THREE.Group();
+
+                // NPC Blocky Mesh
+                const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 0.7), new THREE.MeshStandardMaterial({ color: qData.color }));
+                body.position.y = 1.4;
+                body.castShadow = true;
+                npcGroup.add(body);
+
+                const head = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 1.0), new THREE.MeshStandardMaterial({ color: 0xffcc80 }));
+                head.position.y = 2.6;
+                head.castShadow = true;
+                npcGroup.add(head);
+
+                // Floating Glowing Exclamation Mark above NPC
+                const markerGeo = new THREE.OctahedronGeometry(0.5);
+                const markerMat = new THREE.MeshBasicMaterial({ color: 0xfacc15, wireframe: true });
+                const marker = new THREE.Mesh(markerGeo, markerMat);
+                marker.position.y = 4.2;
+                marker.name = "glowMarker";
+                npcGroup.add(marker);
+
+                npcGroup.position.set(item.x, 0, item.z);
+                scene.add(npcGroup);
+
+                npcs.push({
+                    id: item.id,
+                    data: qData,
+                    mesh: npcGroup,
+                    pos: new THREE.Vector3(item.x, 0, item.z)
+                });
+            });
+        }
+
+        // CONTROLS & INPUT SYSTEM
+        function setupInputListeners() {
+            // Keyboard Keydown
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.forward = true;
+                if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.backward = true;
+                if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = true;
+                if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.right = true;
+                if (e.code === 'Space') {
+                    if (playerState.isGrounded) {
+                        playerState.velocity.y = playerState.jumpForce;
+                        playerState.isGrounded = false;
+                        sfx.jump();
+                    }
+                }
+                if (e.code === 'KeyE') triggerInteraction();
+            });
+
+            // Keyboard Keyup
+            window.addEventListener('keyup', (e) => {
+                if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.forward = false;
+                if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.backward = false;
+                if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = false;
+                if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.right = false;
+            });
+
+            // Mobile Virtual Jump Button
+            const btnJump = document.getElementById('btn-jump-mobile');
+            btnJump.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (playerState.isGrounded) {
+                    playerState.velocity.y = playerState.jumpForce;
+                    playerState.isGrounded = false;
+                    sfx.jump();
+                }
+            });
+            btnJump.addEventListener('click', () => {
+                if (playerState.isGrounded) {
+                    playerState.velocity.y = playerState.jumpForce;
+                    playerState.isGrounded = false;
+                    sfx.jump();
+                }
+            });
+
+            // Mobile Interact Button
+            const btnInteract = document.getElementById('btn-interact-mobile');
+            btnInteract.addEventListener('click', triggerInteraction);
+            btnInteract.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                triggerInteraction();
+            });
+
+            // Mobile Touch Joystick
+            setupTouchJoystick();
+        }
+
+        function setupTouchJoystick() {
+            const joystickContainer = document.getElementById('joystick-container');
+            const joystickKnob = document.getElementById('joystick-knob');
+
+            // Show joystick on touch devices
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                joystickContainer.style.display = 'block';
+            }
+
+            let active = false;
+            let startX = 0, startY = 0;
+            const maxRadius = 35;
+
+            joystickContainer.addEventListener('touchstart', (e) => {
+                active = true;
+                const touch = e.touches[0];
+                const rect = joystickContainer.getBoundingClientRect();
+                startX = rect.left + rect.width / 2;
+                startY = rect.top + rect.height / 2;
+            });
+
+            window.addEventListener('touchmove', (e) => {
+                if (!active) return;
+                const touch = e.touches[0];
+                const dx = touch.clientX - startX;
+                const dy = touch.clientY - startY;
+                const dist = Math.hypot(dx, dy);
+                const angle = Math.atan2(dy, dx);
+
+                const clampedDist = Math.min(dist, maxRadius);
+                const knobX = clampedDist * Math.cos(angle);
+                const knobY = clampedDist * Math.sin(angle);
+
+                joystickKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
+
+                joystickInput.x = knobX / maxRadius;
+                joystickInput.y = knobY / maxRadius;
+            });
+
+            const resetJoystick = () => {
+                active = false;
+                joystickKnob.style.transform = `translate(0px, 0px)`;
+                joystickInput.x = 0;
+                joystickInput.y = 0;
+            };
+
+            window.addEventListener('touchend', resetJoystick);
+            window.addEventListener('touchcancel', resetJoystick);
+        }
+
+        // MAIN GAME UPDATE LOOP
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = Math.min(clock.getDelta(), 0.1);
+
+            // 1. Calculate Move Vector
+            let moveX = 0;
+            let moveZ = 0;
+
+            if (keys.forward) moveZ -= 1;
+            if (keys.backward) moveZ += 1;
+            if (keys.left) moveX -= 1;
+            if (keys.right) moveX += 1;
+
+            // Touch Joystick Override
+            if (Math.abs(joystickInput.x) > 0.1 || Math.abs(joystickInput.y) > 0.1) {
+                moveX = joystickInput.x;
+                moveZ = joystickInput.y;
+            }
+
+            // Normalize vector
+            const inputLen = Math.hypot(moveX, moveZ);
+            if (inputLen > 1) {
+                moveX /= inputLen;
+                moveZ /= inputLen;
+            }
+
+            // Apply Movement Speed
+            playerState.pos.x += moveX * playerState.speed * delta;
+            playerState.pos.z += moveZ * playerState.speed * delta;
+
+            // Rotate Player to Face Moving Direction
+            if (inputLen > 0.1) {
+                playerState.rotation = Math.atan2(moveX, moveZ);
+                playerGroup.rotation.y = playerState.rotation;
+            }
+
+            // Apply Gravity & Jumping Physics
+            playerState.velocity.y -= 30 * delta;
+            playerState.pos.y += playerState.velocity.y * delta;
+
+            // Ground Collision
+            if (playerState.pos.y <= 0) {
+                playerState.pos.y = 0;
+                playerState.velocity.y = 0;
+                playerState.isGrounded = true;
+            }
+
+            // Clamp World Boundaries
+            playerState.pos.x = Math.max(-135, Math.min(135, playerState.pos.x));
+            playerState.pos.z = Math.max(-135, Math.min(135, playerState.pos.z));
+
+            // Update Group Position
+            playerGroup.position.copy(playerState.pos);
+
+            // 2. Third-Person Camera Follow
+            const cameraOffset = new THREE.Vector3(0, 10, 16);
+            camera.position.x = playerState.pos.x + cameraOffset.x;
+            camera.position.y = playerState.pos.y + cameraOffset.y;
+            camera.position.z = playerState.pos.z + cameraOffset.z;
+            camera.lookAt(playerState.pos.x, playerState.pos.y + 2, playerState.pos.z);
+
+            // 3. Animate Glow Markers on NPCs
+            npcs.forEach(npc => {
+                const marker = npc.mesh.getObjectByName("glowMarker");
+                if (marker) {
+                    marker.rotation.y += delta * 2;
+                    marker.position.y = 4.2 + Math.sin(clock.getElapsedTime() * 4) * 0.2;
+                }
+            });
+
+            // 4. Proximity Check for Interactions & Zones
+            checkProximityAndZones();
+
+            renderer.render(scene, camera);
+        }
+
+        // PROXIMITY & ZONES LOGIC
+        function checkProximityAndZones() {
+            // Zone Detection based on X, Z
+            let currentZone = 1;
+            const pX = playerState.pos.x;
+            const pZ = playerState.pos.z;
+
+            if (pZ < -60) currentZone = 5; // Arena Master
+            else if (pX > 20 && pZ < 0) currentZone = 4; // Desa Harmoni
+            else if (pX > 20 && pZ >= 0) currentZone = 3; // Masyarakat
+            else if (pX <= 20 && pZ < 0) currentZone = 2; // Sekolah
+            else currentZone = 1; // Kota Norma
+
+            if (GAME_STATE.activeZone !== currentZone) {
+                GAME_STATE.activeZone = currentZone;
+                onZoneChange(currentZone);
+            }
+
+            // NPC Proximity Detection
+            let closestNPC = null;
+            let minDistance = 4.5; // Trigger Distance
+
+            npcs.forEach(npc => {
+                const dist = playerState.pos.distanceTo(npc.pos);
+                if (dist < minDistance) {
+                    closestNPC = npc;
+                }
+            });
+
+            const promptEl = document.getElementById('interaction-prompt');
+            const promptText = document.getElementById('prompt-text');
+            const mobileInteractBtn = document.getElementById('btn-interact-mobile');
+
+            if (closestNPC) {
+                GAME_STATE.activeNPC = closestNPC;
+                promptText.innerText = `Bicara dengan ${closestNPC.data.npcName}`;
+                promptEl.classList.remove('hidden');
+                mobileInteractBtn.classList.remove('hidden');
+            } else {
+                GAME_STATE.activeNPC = null;
+                promptEl.classList.add('hidden');
+                mobileInteractBtn.classList.add('hidden');
+            }
+        }
+
+        function onZoneChange(zoneId) {
+            const zoneNames = {
+                1: "ZONA 1: KOTA NORMA",
+                2: "ZONA 2: SEKOLAH BERKARAKTER",
+                3: "ZONA 3: MASYARAKAT TERTIB",
+                4: "ZONA 4: DESA HARMONI",
+                5: "ZONA 5: ARENA MASTER NORMA"
+            };
+
+            const name = zoneNames[zoneId] || "DUNIA NORMA";
+            document.getElementById('current-zone-name').innerText = name;
+
+            // Show Toast Banner
+            const toast = document.getElementById('zone-toast');
+            toast.innerText = `Selamat Datang di ${name}`;
+            toast.classList.remove('opacity-0', '-translate-y-4');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-4');
+            }, 2500);
+        }
+
+        // TRIGGER DIALOG / INTERACTION
+        function triggerInteraction() {
+            if (!GAME_STATE.activeNPC) return;
+
+            const qData = GAME_STATE.activeNPC.data;
+
+            // Populate Dialog Modal UI
+            document.getElementById('npc-name').innerText = qData.npcName;
+            document.getElementById('npc-role').innerText = qData.npcRole;
+            document.getElementById('npc-dialog-text').innerText = qData.dialog;
+
+            const optionsContainer = document.getElementById('npc-options-container');
+            const feedbackContainer = document.getElementById('npc-feedback-container');
+            const closeBtn = document.getElementById('btn-close-npc-dialog');
+
+            optionsContainer.innerHTML = '';
+            feedbackContainer.classList.add('hidden');
+            closeBtn.classList.add('hidden');
+
+            // Render Answer Buttons
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left bg-slate-800 hover:bg-slate-700 active:bg-slate-900 border-2 border-slate-600 hover:border-yellow-400 rounded-xl p-3 text-xs sm:text-sm text-slate-100 font-semibold transition flex items-center justify-between gap-2 shadow';
+                btn.innerHTML = `<span>${opt.text}</span> <i class="fa-solid fa-chevron-right text-yellow-400"></i>`;
+                btn.addEventListener('click', () => handleAnswerSelect(opt, qData.id));
+                optionsContainer.appendChild(btn);
+            });
+
+            // Show NPC Modal
+            document.getElementById('npc-dialog-modal').classList.remove('hidden');
+        }
+
+        // HANDLE NPC ANSWER SELECTION
+        function handleAnswerSelect(option, questId) {
+            const feedbackContainer = document.getElementById('npc-feedback-container');
+            const closeBtn = document.getElementById('btn-close-npc-dialog');
+            const optionsContainer = document.getElementById('npc-options-container');
+
+            // Disable all option buttons
+            Array.from(optionsContainer.children).forEach(child => child.disabled = true);
+
+            feedbackContainer.classList.remove('hidden');
+
+            if (option.correct) {
+                sfx.correct();
+                feedbackContainer.className = "mt-3 p-3 rounded-xl bg-emerald-950/90 border-2 border-emerald-400 text-emerald-200 text-xs font-semibold";
+                feedbackContainer.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-base mr-1"></i> <b>JAWABAN BENAR! (+${option.exp} XP)</b><p class="mt-1">${option.explanation}</p>`;
+
+                // Reward XP & Coins if not already completed
+                if (!GAME_STATE.completedQuests.includes(questId)) {
+                    GAME_STATE.completedQuests.push(questId);
+                    GAME_STATE.xp += option.exp;
+                    GAME_STATE.coins += 10;
+                    GAME_STATE.correctAnswers += 1;
+                    updateHUD();
+                    sfx.complete();
+                }
+            } else {
+                sfx.wrong();
+                GAME_STATE.wrongAnswers += 1;
+                feedbackContainer.className = "mt-3 p-3 rounded-xl bg-rose-950/90 border-2 border-rose-400 text-rose-200 text-xs font-semibold";
+                feedbackContainer.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-400 text-base mr-1"></i> <b>JAWABAN KURANG TEPAT!</b><p class="mt-1">Yuk pelajari lagi materinya dan coba kesempatan berikutnya!</p>`;
+            }
+
+            closeBtn.classList.remove('hidden');
+
+            // Check if all 8 quests complete -> Show Final Screen
+            if (GAME_STATE.completedQuests.length >= QUESTS_DATA.length) {
+                setTimeout(() => {
+                    showFinalResultScreen();
+                }, 2000);
+            }
+        }
+
+        // UPDATE HUD & PROGRESS
+        function updateHUD() {
+            document.getElementById('coins-display').innerText = GAME_STATE.coins;
+            document.getElementById('score-display').innerText = `${GAME_STATE.xp} XP`;
+            
+            // Level calculation (every 100 XP = 1 Level)
+            GAME_STATE.level = Math.floor(GAME_STATE.xp / 100) + 1;
+            document.getElementById('player-level-tag').innerText = `Lvl ${GAME_STATE.level}`;
+
+            const currentLevelXP = GAME_STATE.xp % 100;
+            document.getElementById('xp-bar').style.width = `${currentLevelXP}%`;
+            document.getElementById('xp-text').innerText = `${currentLevelXP}/100 XP`;
+
+            // Active Quest Title Update
+            const nextQuest = QUESTS_DATA.find(q => !GAME_STATE.completedQuests.includes(q.id));
+            if (nextQuest) {
+                document.getElementById('current-quest-title').innerHTML = `<i class="fa-solid fa-compass text-yellow-400 mr-1"></i> ${nextQuest.title}`;
+            } else {
+                document.getElementById('current-quest-title').innerHTML = `<i class="fa-solid fa-trophy text-yellow-400 mr-1"></i> Semua Misi Selesai!`;
+            }
+
+            // Save state to localStorage
+            try {
+                localStorage.setItem('norma_adventure_save', JSON.stringify({
+                    playerName: GAME_STATE.playerName,
+                    xp: GAME_STATE.xp,
+                    coins: GAME_STATE.coins,
+                    completedQuests: GAME_STATE.completedQuests
+                }));
+            } catch(e) {}
+        }
+
+        // FINAL RESULT EVALUATION SCREEN
+        function showFinalResultScreen() {
+            document.getElementById('npc-dialog-modal').classList.add('hidden');
+            const resultModal = document.getElementById('result-screen-modal');
+
+            const totalQuests = QUESTS_DATA.length;
+            const completedCount = GAME_STATE.completedQuests.length;
+            const finalScorePct = Math.round((completedCount / totalQuests) * 100);
+
+            document.getElementById('result-player-name').innerText = `Hasil Evaluasi: ${GAME_STATE.playerName}`;
+            document.getElementById('result-final-score').innerText = `${finalScorePct}%`;
+            document.getElementById('result-total-xp').innerText = GAME_STATE.xp;
+            document.getElementById('result-correct-count').innerText = `${completedCount} / ${totalQuests}`;
+            document.getElementById('result-coins').innerText = GAME_STATE.coins;
+
+            // Achievement Title Categorization
+            let badgeTitle = "MASTER NORMA";
+            let badgeDesc = "Sangat Luar Biasa! Kamu menguasai seluruh norma kehidupan bermasyarakat!";
+
+            if (finalScorePct >= 90) {
+                badgeTitle = "MASTER NORMA";
+                badgeDesc = "Sangat Luar Biasa! Kamu menguasai seluruh norma kehidupan bermasyarakat dengan sempurna!";
+            } else if (finalScorePct >= 80) {
+                badgeTitle = "AHLI NORMA";
+                badgeDesc = "Hebat Sekali! Kamu memiliki pemahaman norma yang sangat baik dalam kehidupan!";
+            } else if (finalScorePct >= 70) {
+                badgeTitle = "PENJELAJAH NORMA";
+                badgeDesc = "Bagus! Kamu sudah memahami konsep dasar norma dalam masyarakat!";
+            } else {
+                badgeTitle = "AYO BELAJAR LAGI";
+                badgeDesc = "Jangan patah semangat! Pelajari kembali rangkuman materi dan coba petualangan lagi!";
+            }
+
+            document.getElementById('result-badge-title').innerText = badgeTitle;
+            document.getElementById('result-badge-desc').innerText = badgeDesc;
+
+            resultModal.classList.remove('hidden');
+            sfx.complete();
+        }
+
+        // RESIZE HANDLER
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // INITIALIZATION ON WINDOW LOAD
+        window.onload = function() {
+            // 1. Build 3D World
+            init3DWorld();
+
+            // 2. Load Saved LocalStorage Progress if available
+            try {
+                const saved = localStorage.getItem('norma_adventure_save');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    GAME_STATE.playerName = data.playerName || "Siswa SMP";
+                    GAME_STATE.xp = data.xp || 0;
+                    GAME_STATE.coins = data.coins || 0;
+                    GAME_STATE.completedQuests = data.completedQuests || [];
+                    document.getElementById('player-name-input').value = GAME_STATE.playerName;
+                }
+            } catch(e) {}
+
+            // 3. UI Menu Event Bindings
+            document.getElementById('btn-start-game').addEventListener('click', () => {
+                const inputName = document.getElementById('player-name-input').value.trim();
+                if (inputName) GAME_STATE.playerName = inputName;
+                document.getElementById('player-name-display').innerText = GAME_STATE.playerName;
+
+                document.getElementById('start-menu-modal').classList.add('hidden');
+                updateHUD();
+                sfx.init();
+            });
+
+            // Open Modals
+            document.getElementById('btn-open-materi').addEventListener('click', () => document.getElementById('materi-modal').classList.remove('hidden'));
+            document.getElementById('btn-open-petunjuk').addEventListener('click', () => document.getElementById('petunjuk-modal').classList.remove('hidden'));
+            document.getElementById('btn-open-tentang').addEventListener('click', () => document.getElementById('tentang-modal').classList.remove('hidden'));
+
+            // Close Modals
+            document.querySelectorAll('.btn-close-modal').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.getElementById('materi-modal').classList.add('hidden');
+                    document.getElementById('petunjuk-modal').classList.add('hidden');
+                    document.getElementById('tentang-modal').classList.add('hidden');
+                });
+            });
+
+            document.getElementById('btn-close-npc-dialog').addEventListener('click', () => {
+                document.getElementById('npc-dialog-modal').classList.add('hidden');
+            });
+
+            // Restart & Return Buttons
+            document.getElementById('btn-restart-game').addEventListener('click', () => {
+                GAME_STATE.xp = 0;
+                GAME_STATE.coins = 0;
+                GAME_STATE.completedQuests = [];
+                GAME_STATE.correctAnswers = 0;
+                GAME_STATE.wrongAnswers = 0;
+                playerState.pos.set(0, 0, 15);
+                updateHUD();
+                document.getElementById('result-screen-modal').classList.add('hidden');
+            });
+
+            document.getElementById('btn-menu-game').addEventListener('click', () => {
+                document.getElementById('result-screen-modal').classList.add('hidden');
+                document.getElementById('start-menu-modal').classList.remove('hidden');
+            });
+        };
+    </script>
+</body>
+</html>
